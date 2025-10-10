@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WinGo Live — Auto 30s + Live Clock</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      margin: 16px;
+      background:#f6f7fb;
+      color:#111;
+    }
+    .card {
+      background:#fff;
+      padding:16px;
+      border-radius:8px;
+      box-shadow:0 6px 18px rgba(20,20,50,0.06);
+      max-width:760px;
+      margin:auto;
+    }
+    h1 { color:#d93636; margin:0 0 8px 0; }
+    .controls { display:flex; gap:8px; align-items:center; margin:12px 0; flex-wrap:wrap; }
+    button {
+      padding:8px 12px; border-radius:6px;
+      border:1px solid #d93636; background:#fff; color:#d93636;
+      cursor:pointer; font-weight:600;
+    }
+    button:active { transform:translateY(1px); }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+    .box {
+      background:#f9fafb; padding:12px; border-radius:8px;
+      border:1px solid #eee;
+    }
+    pre {
+      background:#0b1220; color:#dff1c5;
+      padding:12px; border-radius:6px; overflow:auto;
+    }
+    .muted { color:#666; font-size:0.95rem; }
+    .error { color:#c93636; font-weight:700; }
+    .num { font-size:1.5rem; font-weight:700; padding:2px 6px; color:#111; }
+    .red { color:#d93636; }
+    .green { color:#28a745; }
+    .violet { color:violet; font-weight:700; }
+    .size { font-weight:600; font-size:1.1rem; }
+    .small { color:#007bff; }
+    .big { color:#ff9800; }
+
+    .history-wrapper {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f9fafb;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .history-table th, .history-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e2e2;
+    }
+    .history-table th {
+      background: #f3f4f6;
+      font-weight: 600;
+      color: #333;
+    }
+    .color-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin: 0 2px;
+    }
+    .color-dot.red { background: red; }
+    .color-dot.green { background: green; }
+    .color-dot.violet { background: purple; }
+    .center { text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>WinGo Live — Auto 30s + Live Clock</h1>
+    <p class="muted">Fetches from the WinGo JSON endpoint every 30 seconds, showing live India time.</p>
+
+    <div class="controls">
+      <button id="btnRefresh">Refresh now</button>
+      <div style="margin-left:auto" id="lastUpdated" class="muted">Clock: --:--:--</div>
+    </div>
+
+    <div class="grid">
+      <div class="box">
+        <h3>Latest Draw</h3>
+        <div id="latest">Loading...</div>
+      </div>
+
+      <div class="box">
+        <h3>Estimation (Trend %)</h3>
+        <div id="estimation">Waiting for data...</div>
+      </div>
+
+      <div class="box" style="grid-column:1 / -1;">
+        <h3>Statistics (last 10 rounds)</h3>
+        <div id="stats">Loading...</div>
+      </div>
+
+      <div class="box">
+        <h3>Raw JSON (preview)</h3>
+        <pre id="raw">Loading...</pre>
+      </div>
+
+      <div class="box">
+        <h3>History (last 10 results)</h3>
+        <div id="historyTable"></div>
+      </div>
+    </div>
+
+    <div id="errorBox" style="margin-top:8px"></div>
+  </div>
+
+<script>
+const baseEndpoint = "https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json";
+const latestEl = document.getElementById('latest');
+const statsEl = document.getElementById('stats');
+const rawEl = document.getElementById('raw');
+const estimationEl = document.getElementById('estimation');
+const errorBox = document.getElementById('errorBox');
+const lastUpdated = document.getElementById('lastUpdated');
+const btnRefresh = document.getElementById('btnRefresh');
+
+btnRefresh.addEventListener('click', () => fetchAndRender(true));
+
+function getFetchUrl() {
+  return baseEndpoint + "?ts=" + Date.now();
+}
+
+async function fetchHistory() {
+  const res = await fetch(getFetchUrl(), { method: 'GET', cache: 'no-store' });
+  if (!res.ok) throw new Error("HTTP " + res.status + " - " + res.statusText);
+  return await res.json();
+}
+
+function getColor(num) {
+  if (num === 0) return ['red', 'violet'];
+  if (num === 5) return ['green', 'violet'];
+  if ([2,4,6,8].includes(num)) return ['red'];
+  if ([1,3,7,9].includes(num)) return ['green'];
+  return ['—'];
+}
+
+function getSize(num) {
+  if (num >= 0 && num <= 4) return 'Small';
+  if (num >= 5 && num <= 9) return 'Big';
+  return '—';
+}
+
+// ✅ FIXED summarize function
+function summarize(dataArray) {
+  const arr = dataArray.slice(0, 10);
+  const stats = { big: 0, small: 0, red: 0, green: 0, violet: 0, total: 0, nums: Array(10).fill(0) };
+  for (const it of arr) {
+    const num = Number(it.number || it.result || it.Result);
+    if (isNaN(num)) continue;
+    stats.total++;
+    stats.nums[num]++;
+    const size = getSize(num);
+    const colors = getColor(num);
+    if (size === 'Big') stats.big++;
+    else if (size === 'Small') stats.small++;
+    for (const c of colors) {
+      if (c === 'red') stats.red++;
+      else if (c === 'green') stats.green++;
+      else if (c === 'violet') stats.violet++;
+    }
+  }
+  return stats;
+}
+
+function renderLatest(dataArray) {
+  if (!dataArray || dataArray.length === 0) {
+    latestEl.textContent = 'No data';
+    return;
+  }
+  const it = dataArray[0];
+  const issue = it.issue || it.Issue || it.issueNumber || '—';
+  const num = Number(it.number || it.Number || it.result || -1);
+  const size = getSize(num);
+  const colors = getColor(num);
+  const colorHTML = colors
+    .filter(c => c !== '—')
+    .map(c => `<span class="${c}">${c}</span>`)
+    .join(' + ');
+
+  latestEl.innerHTML = `
+    <div><strong>Issue:</strong> ${issue}</div>
+    <div><strong>Number:</strong> <span class="num ${colors[0]}">${num}</span></div>
+    <div><strong>Color:</strong> ${colorHTML}</div>
+    <div><strong>Result:</strong> <span class="size ${size.toLowerCase()}">${size}</span></div>
+  `;
+}
+
+function renderEstimation(history, stats) {
+  if (!history || history.length === 0) {
+    estimationEl.textContent = 'No data for estimation';
+    return;
+  }
+
+  const latestIssue = history[0].issue || history[0].Issue || history[0].issueNumber || "—";
+  let nextIssue = "—";
+  if (!isNaN(Number(latestIssue))) {
+    nextIssue = Number(latestIssue) + 1;
+    if (String(latestIssue).length > 10) {
+      nextIssue = String(BigInt(latestIssue) + 1n);
+    }
+  }
+
+  const { big, small, red, green, violet, total, nums } = stats;
+  const baseSize = { Big: 50, Small: 50 };
+  const baseColor = { red: 40, green: 40, violet: 20 };
+  const dominanceSize = Math.abs(big - small) / total;
+  const dominanceColor = Math.abs(red - green) / (red + green + violet);
+
+  let sizeBias = baseSize.Big;
+  if (big > small) sizeBias -= dominanceSize * 30;
+  else sizeBias += dominanceSize * 30;
+
+  let redBias = baseColor.red;
+  let greenBias = baseColor.green;
+  let violetBias = baseColor.violet;
+  if (red > green) { redBias -= dominanceColor * 30; greenBias += dominanceColor * 30; }
+  else { redBias += dominanceColor * 30; greenBias -= dominanceColor * 30; }
+
+  const nextSize = {
+    Big: ((sizeBias / 100) * 100).toFixed(1),
+    Small: ((100 - sizeBias) / 100 * 100).toFixed(1)
+  };
+  const colorTotal = redBias + greenBias + violetBias;
+  const nextColor = {
+    red: ((redBias / colorTotal) * 100).toFixed(1),
+    green: ((greenBias / colorTotal) * 100).toFixed(1),
+    violet: ((violetBias / colorTotal) * 100).toFixed(1)
+  };
+
+  const maxCount = Math.max(...nums);
+  const minCount = Math.min(...nums);
+  const spread = maxCount - minCount || 1;
+  const rawProbs = nums.map(c => (maxCount - c + 1));
+  const totalRaw = rawProbs.reduce((a, b) => a + b, 0);
+  const normalized = rawProbs.map(p => (p / totalRaw) * 100);
+  const top3 = normalized
+    .map((v, i) => ({ num: i, chance: v }))
+    .sort((a, b) => b.chance - a.chance)
+    .slice(0, 3);
+
+  let trendComment = "";
+  if (big > small) trendComment += "Trend: Mostly Big — possible reversal to Small. ";
+  else if (small > big) trendComment += "Trend: Mostly Small — possible reversal to Big. ";
+  else trendComment += "Balanced size pattern — no clear bias. ";
+  if (red > green) trendComment += "Reds dominated — Green/Violet could appear next.";
+  else if (green > red) trendComment += "Greens dominated — Red/Violet may appear.";
+  else trendComment += "Color distribution balanced.";
+
+  estimationEl.innerHTML = `
+    <div><strong>Next Issue:</strong> ${nextIssue}</div>
+    <div><strong>Predicted Size:</strong> ⬆️ Big: ${nextSize.Big}% | ⬇️ Small: ${nextSize.Small}%</div>
+    <div><strong>Predicted Color:</strong> 🔴 ${nextColor.red}% | 🟢 ${nextColor.green}% | 🟣 ${nextColor.violet}%</div>
+    <div><strong>Top 3 Likely Numbers:</strong></div>
+    <ul style="margin-left:1em;">
+      ${top3.map(t => `<li><span class="num">${t.num}</span> — ${t.chance.toFixed(1)}%</li>`).join('')}
+    </ul>
+    <div style="margin-top:6px;font-style:italic;">${trendComment}</div>
+    <div class="muted" style="margin-top:6px;">Based on last ${total} results</div>
+  `;
+}
+
+function renderHistoryTable(dataArray) {
+  const container = document.getElementById('historyTable');
+  if (!container) return;
+  const rows = dataArray.slice(0, 10).map(item => {
+    const issue = item.issue || item.Issue || item.issueNumber || '—';
+    const num = Number(item.number || item.result || item.Result || -1);
+    const colors = getColor(num);
+    const size = getSize(num);
+    const colorDots = colors
+      .filter(c => c !== '—')
+      .map(c => `<span class="color-dot ${c}"></span>`)
+      .join('');
+    return `
+      <tr>
+        <td>${issue}</td>
+        <td><span class="num ${colors[0]}">${num}</span></td>
+        <td class="center">${colorDots}</td>
+        <td class="center">${size}</td>
+      </tr>`;
+  }).join('');
+  container.innerHTML = `
+    <div class="history-wrapper">
+      <table class="history-table">
+        <thead><tr><th>Issue</th><th>Number</th><th>Color</th><th>Size</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+async function fetchAndRender(manual = false) {
+  try {
+    const json = await fetchHistory();
+    let dataArray = [];
+    if (Array.isArray(json.data)) dataArray = json.data;
+    else if (json.data && Array.isArray(json.data.list)) dataArray = json.data.list;
+    else if (Array.isArray(json.Result)) dataArray = json.Result;
+    else if (Array.isArray(json)) dataArray = json;
+    if (!Array.isArray(dataArray) || dataArray.length === 0)
+      throw new Error('No data found in response.');
+
+    rawEl.textContent = JSON.stringify(dataArray.slice(0, 8), null, 2);
+    const historySlice = dataArray.slice(0, 10);
+    renderLatest(dataArray);
+
+    const stats = summarize(historySlice);
+    statsEl.innerHTML = `
+      <div>Total: ${stats.total}</div>
+      <div>Big: ${stats.big} | Small: ${stats.small}</div>
+      <div>Red: ${stats.red} | Green: ${stats.green} | Violet: ${stats.violet}</div>`;
+
+    renderEstimation(historySlice, stats);
+    renderHistoryTable(historySlice);
+  } catch (err) {
+    console.error(err);
+    const isCORS = /Failed to fetch|CORS/i.test(err.message);
+    errorBox.innerHTML = `<div class="error">${err.message}</div>` +
+      (isCORS ? `<div class="muted">CORS issue — use a proxy.</div>` : '');
+    latestEl.textContent = statsEl.textContent = rawEl.textContent = estimationEl.textContent = 'Error';
+  } finally {
+    if (manual) console.log("Manual refresh done.");
+  }
+}
+
+async function startLiveClock() {
+  let baseOffset = 0;
+  try {
+    const res = await fetch("https://worldtimeapi.org/api/timezone/Asia/Kolkata");
+    const data = await res.json();
+    baseOffset = new Date(data.datetime) - Date.now();
+  } catch {
+    baseOffset = 0;
+  }
+  setInterval(() => {
+    const now = new Date(Date.now() + baseOffset);
+    const timeStr = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+    lastUpdated.textContent = "Clock: " + timeStr + " (IST)";
+    const sec = now.getSeconds();
+    if (sec === 0 || sec === 30) {
+      if (!window._justFetched) {
+        fetchAndRender();
+        window._justFetched = true;
+        setTimeout(()=>window._justFetched=false, 1000);
+      }
+    }
+  }, 1000);
+}
+
+fetchAndRender();
+startLiveClock();
+</script>
+</body>
+</html>

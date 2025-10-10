@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WinGo Prediction Hub</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: #f6f7fb;
+      margin: 0;
+      color: #111;
+    }
+    header {
+      text-align: center;
+      padding: 40px 20px 20px;
+    }
+    h1 {
+      color: #d93636;
+      font-size: 2rem;
+      margin-bottom: 6px;
+    }
+    p {
+      color: #555;
+      font-size: 1rem;
+      margin: 0 auto;
+      max-width: 600px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 30px 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 20px;
+      box-shadow: 0 6px 18px rgba(20,20,50,0.06);
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 22px rgba(20,20,50,0.08);
+    }
+    .card h2 {
+      color: #111;
+      margin-bottom: 10px;
+    }
+    .card p {
+      color: #555;
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+    }
+    a.button {
+      display: inline-block;
+      background: #d93636;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+    a.button:hover {
+      background: #b92c2c;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WinGo Prediction Hub</h1>
+    <p>Select a timing below to view the live results, statistics, and smart prediction for each game mode.</p>
+  </header>
+
+  <section class="grid">
+    <div class="card">
+      <h2>30 Seconds</h2>
+      <p>Fast-paced live results every 30 seconds with real-time predictions.</p>
+      <a href="30s.html" class="button">Open 30s Wingo</a>
+    </div>
+
+    <div class="card">
+      <h2>1 Minute</h2>
+      <p>Quick results and analysis every 60 seconds — perfect for short rounds.</p>
+      <a href="1m.html" class="button">Open 1m Wingo</a>
+    </div>
+
+    <div class="card">
+      <h2>3 Minutes</h2>
+      <p>More stable results for medium-term players who prefer balanced predictions.</p>
+      <a href="3m.html" class="button">Open 3m Wingo</a>
+    </div>
+
+    <div class="card">
+      <h2>5 Minutes</h2>
+      <p>Longer game intervals with smoother statistical trends and predictions.</p>
+      <a href="5m.html" class="button">Open 5m Wingo</a>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 BHT Club. All rights reserved.
+  </footer>
+</body>
+</html>
