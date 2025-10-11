@@ -4,105 +4,121 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>WinGo Live — Auto 3 Minutes + Live Clock</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      margin: 16px;
-      background:#f6f7fb;
-      color:#111;
-    }
-    .card {
-      background:#fff;
-      padding:16px;
-      border-radius:8px;
-      box-shadow:0 6px 18px rgba(20,20,50,0.06);
-      max-width:760px;
-      margin:auto;
-    }
-    h1 { color:#d93636; margin:0 0 8px 0; }
-    .controls { display:flex; gap:8px; align-items:center; margin:12px 0; flex-wrap:wrap; }
-    button {
-      padding:8px 12px; border-radius:6px;
-      border:1px solid #d93636; background:#fff; color:#d93636;
-      cursor:pointer; font-weight:600;
-    }
-    button:active { transform:translateY(1px); }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
-    .box {
-      background:#f9fafb; padding:12px; border-radius:8px;
-      border:1px solid #eee;
-    }
-    pre {
-      background:#0b1220; color:#dff1c5;
-      padding:12px; border-radius:6px; overflow:auto;
-    }
-    .muted { color:#666; font-size:0.95rem; }
-    .error { color:#c93636; font-weight:700; }
-    .num { font-size:1.5rem; font-weight:700; padding:2px 6px; color:#111; }
-    .red { color:#d93636; }
-    .green { color:#28a745; }
-    .violet { color:violet; font-weight:700; }
-    .size { font-weight:600; font-size:1.1rem; }
-    .small { color:#007bff; }
-    .big { color:#ff9800; }
+<style>
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    margin: 16px;
+    background:#f6f7fb;
+    color:#111;
+  }
+  .card {
+    background:#fff;
+    padding:16px;
+    border-radius:8px;
+    box-shadow:0 6px 18px rgba(20,20,50,0.06);
+    max-width:760px;
+    margin:auto;
+  }
+  h1 { color:#d93636; margin:0 0 8px 0; }
+  .controls { display:flex; gap:8px; align-items:center; margin:12px 0; flex-wrap:wrap; }
 
-    .history-wrapper {
-      margin-top: 15px;
-      padding: 10px;
-      background: #f9fafb;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-    .history-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .history-table th, .history-table td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #e2e2e2;
-    }
-    .history-table th {
-      background: #f3f4f6;
-      font-weight: 600;
-      color: #333;
-    }
-    .color-dot {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      margin: 0 2px;
-    }
-    .color-dot.red { background: red; }
-    .color-dot.green { background: green; }
-    .color-dot.violet { background: purple; }
-    .center { text-align: center; }
-    .home-btn {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  background: #007bff;
-  color: #fff;
-  text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  transition: background 0.3s, transform 0.2s;
-  z-index: 9999;
-}
+  /* --- Refreshed Button Styles --- */
+  button {
+    padding:10px 16px;
+    border-radius:8px;
+    border:2px solid #d93636;
+    background:#fff;
+    color:#d93636;
+    font-weight:600;
+    cursor:pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  button:hover {
+    background:#d93636;
+    color:#fff;
+    box-shadow: 0 4px 10px rgba(217,54,54,0.3);
+  }
+  button:active {
+    transform: scale(0.95);
+    background:#b42c2c;
+    color:#fff;
+  }
+  button.clicked::after {
+    content: '✔ Refreshed!';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(217,54,54,0.9);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 8px;
+    animation: flash 0.8s ease forwards;
+  }
+  @keyframes flash {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.2); }
+  }
 
-.home-btn:hover {
-  background: #0056b3;
-  transform: scale(1.05);
-}
-  </style>
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  .box {
+    background:#f9fafb; padding:12px; border-radius:8px;
+    border:1px solid #eee;
+  }
+  pre {
+    background:#0b1220; color:#dff1c5;
+    padding:12px; border-radius:6px; overflow:auto;
+  }
+  .muted { color:#666; font-size:0.95rem; }
+  .error { color:#c93636; font-weight:700; }
+  .num { font-size:1.5rem; font-weight:700; padding:2px 6px; color:#111; }
+  .red { color:#d93636; }
+  .green { color:#28a745; }
+  .violet { color:violet; font-weight:700; }
+  .size { font-weight:600; font-size:1.1rem; }
+  .small { color:#007bff; }
+  .big { color:#ff9800; }
+
+  .history-wrapper {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f9fafb;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .history-table th, .history-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e2e2;
+  }
+  .history-table th {
+    background: #f3f4f6;
+    font-weight: 600;
+    color: #333;
+  }
+  .color-dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin: 0 2px;
+  }
+  .color-dot.red { background: red; }
+  .color-dot.green { background: green; }
+  .color-dot.violet { background: purple; }
+  .center { text-align: center; }
+</style>
+
 </head>
 <body>
-  <a href="index.html" class="home-btn">🏠 Home</a>
   <div class="card">
     <h1>WinGo Live — Auto 3 Minutes + Live Clock</h1>
     <p class="muted">Fetches from the WinGo JSON endpoint every 3 Minutes, showing live India time.</p>
@@ -124,7 +140,7 @@
       </div>
 
       <div class="box" style="grid-column:1 / -1;">
-        <h3>Statistics (last 10 rounds)</h3>
+        <h3>Statistics</h3>
         <div id="stats">Loading...</div>
       </div>
 
@@ -134,7 +150,7 @@
       </div>
 
       <div class="box">
-        <h3>History (last 10 results)</h3>
+        <h3>History (10 results)</h3>
         <div id="historyTable"></div>
       </div>
     </div>
@@ -152,6 +168,17 @@ const errorBox = document.getElementById('errorBox');
 const lastUpdated = document.getElementById('lastUpdated');
 const btnRefresh = document.getElementById('btnRefresh');
 
+let lastKnownIssue = null;
+let currentPage = 0;
+let fullHistory = []; // newest-first
+let autoCheckInterval = null;
+
+// persist page
+window.addEventListener("beforeunload", () => {
+  try { localStorage.setItem("currentPage", String(currentPage)); } catch(e){ }
+});
+currentPage = parseInt(localStorage.getItem("currentPage") || "0", 10) || 0;
+
 btnRefresh.addEventListener('click', () => fetchAndRender(true));
 
 function getFetchUrl() {
@@ -164,7 +191,6 @@ async function fetchHistory() {
   return await res.json();
 }
 
-// Corrected color logic (0 = red+violet, 5 = green+violet)
 function getColor(num) {
   if (num === 0) return 'red-violet';
   if (num === 5) return 'green-violet';
@@ -172,27 +198,25 @@ function getColor(num) {
   if ([1,3,7,9].includes(num)) return 'green';
   return '—';
 }
-
 function getSize(num) {
   if (num >= 0 && num <= 4) return 'Small';
   if (num >= 5 && num <= 9) return 'Big';
   return '—';
 }
 
-function summarize(dataArray) {
-  const arr = dataArray.slice(0, 10);
-  const stats = { big:0, small:0, red:0, green:0, violet:0, total:0, nums:Array(10).fill(0) };
+// Summarize last N (default 10). Returns counts and number frequency.
+function summarizeLastN(dataArray, n = 10) {
+  const arr = dataArray.slice(0, Math.min(n, dataArray.length));
+  const stats = { big:0, small:0, red:0, green:0, violet:0, total:0, nums: Array(10).fill(0) };
   for (const it of arr) {
     const num = Number(it.number || it.result || it.Result);
-    if (isNaN(num)) continue;
+    if (Number.isNaN(num)) continue;
     stats.total++;
-    stats.nums[num]++;
+    stats.nums[num] = (stats.nums[num] || 0) + 1;
     const size = getSize(num);
     const color = getColor(num);
-
     if (size === 'Big') stats.big++;
     else if (size === 'Small') stats.small++;
-
     if (color.includes('red')) stats.red++;
     if (color.includes('green')) stats.green++;
     if (color.includes('violet')) stats.violet++;
@@ -200,31 +224,146 @@ function summarize(dataArray) {
   return stats;
 }
 
-function renderLatest(dataArray) {
-  if (!dataArray || dataArray.length === 0) {
-    latestEl.textContent = 'No data';
-    return;
+// Pattern detection on last 10 (pattern-based reversal logic)
+// returns { patterns: [...], explanation: "...", predictedNext: { size: 'Big'|'Small'|null, color: 'red'|'green'|'violet'|null } }
+function detectPatternAndPredict(history) {
+  const recent = history.slice(0, 10).map(it => {
+    const num = Number(it.number || it.result || it.Result);
+    return { raw: num, size: getSize(num), color: getColor(num) };
+  }).filter(r => !Number.isNaN(r.raw));
+
+  if (recent.length < 3) return { patterns: [], explanation: "Not enough data yet.", predictedNext: { size: null, color: null } };
+
+  const patterns = [];
+  let explanation = "";
+  const predictedNext = { size: null, color: null };
+
+  // Size streak (count from newest forward)
+  let sizeStreak = 1;
+  for (let i = 1; i < recent.length; i++) {
+    if (recent[i].size === recent[i-1].size) sizeStreak++;
+    else break;
   }
+  if (sizeStreak >= 3) {
+    patterns.push(`${sizeStreak}× ${recent[0].size} (size streak)`);
+    explanation += `Detected a size streak: ${sizeStreak} consecutive ${recent[0].size}. `;
+    // Pattern-based reversal -> predict opposite size
+    predictedNext.size = (recent[0].size === 'Big') ? 'Small' : 'Big';
+    explanation += `Pattern-based reversal: next likely ${predictedNext.size}. `;
+  }
+
+  // Color streak
+  let colorStreak = 1;
+  for (let i = 1; i < recent.length; i++) {
+    if (recent[i].color === recent[i-1].color) colorStreak++;
+    else break;
+  }
+  if (colorStreak >= 3) {
+    patterns.push(`${colorStreak}× ${recent[0].color.toUpperCase()} (color streak)`);
+    explanation += `Detected a color streak: ${colorStreak} × ${recent[0].color.toUpperCase()}. `;
+    predictedNext.color = (recent[0].color === 'red' || recent[0].color === 'red-violet') ? 'green' : 'red';
+    // If violet was streak and it's combined with red/green combos, prefer opposite primary color
+    if (recent[0].color === 'violet' || recent[0].color === 'red-violet' || recent[0].color === 'green-violet') {
+      // when violet heavy, pick the primary color that didn't appear most recently
+      const primaryLast = recent[0].color === 'red-violet' ? 'red' : (recent[0].color === 'green-violet' ? 'green' : 'red');
+      predictedNext.color = primaryLast === 'red' ? 'green' : 'red';
+    }
+    explanation += `Pattern-based reversal: next color likely ${predictedNext.color.toUpperCase()}. `;
+  }
+
+  // Alternating pattern (Big/Small alternating) -> continuation expectation
+  const altLen = Math.min(6, recent.length);
+  let isAlternating = true;
+  for (let i = 1; i < altLen; i++) {
+    if (recent[i].size === recent[i-1].size) { isAlternating = false; break; }
+  }
+  if (isAlternating && altLen >= 4) {
+    patterns.push("Alternating Big/Small");
+    explanation += "Alternating size pattern detected — continuation likely. ";
+    // Predict based on alternating: next size = opposite of latest
+    predictedNext.size = (recent[0].size === 'Big') ? 'Small' : 'Big';
+  }
+
+  // Repeating mini-pattern detection (3..5)
+  const sizeSeq = recent.map(r => r.size);
+  for (let len = 3; len <= 5; len++) {
+    if (sizeSeq.length >= len * 2) {
+      const a = sizeSeq.slice(0, len).join("|");
+      const b = sizeSeq.slice(len, len*2).join("|");
+      if (a === b) {
+        patterns.push(`Repeating size sequence: ${a.replace(/\|/g,' → ')}`);
+        explanation += `Repeating sequence (${a.replace(/\|/g,' → ')}) detected — may repeat. `;
+        // Predict next as continuation of cycle: if repeating, next equals sizeSeq[len] if exists, else assume repetition start
+        predictedNext.size = sizeSeq[len] || sizeSeq[0];
+        break;
+      }
+    }
+  }
+
+  if (!patterns.length) {
+    explanation = "No clear streaks or repeating patterns detected.";
+  }
+
+  return { patterns, explanation, predictedNext };
+}
+
+// Renders latest draw (no style changes)
+function renderLatest(dataArray) {
+  if (!dataArray || dataArray.length === 0) { latestEl.textContent = 'No data'; return; }
   const it = dataArray[0];
   const issue = it.issue || it.Issue || it.issueNumber || '—';
   const num = Number(it.number || it.Number || it.result || -1);
   const size = getSize(num);
   const color = getColor(num);
-
   let colorDisplay = '';
   if (color === 'red-violet') colorDisplay = '🔴🟣 Red + Violet';
   else if (color === 'green-violet') colorDisplay = '🟢🟣 Green + Violet';
   else colorDisplay = color === 'red' ? '🔴 Red' : color === 'green' ? '🟢 Green' : '—';
 
-  latestEl.innerHTML = `
+  const html = `
     <div><strong>Issue:</strong> ${issue}</div>
     <div><strong>Number:</strong> <span class="num ${color}">${num}</span></div>
     <div><strong>Color:</strong> ${colorDisplay}</div>
     <div><strong>Result:</strong> <span class="size ${size.toLowerCase()}">${size}</span></div>
   `;
+  if (latestEl.dataset.hash !== html) {
+    latestEl.dataset.hash = html;
+    latestEl.innerHTML = html;
+  }
 }
 
-function renderEstimation(history, stats) {
+// Render statistics (fixed to last 10)
+function renderStats(stats) {
+  const newHTML = `
+    <div style="margin-bottom:8px;"><strong>Based on last ${stats.total} rounds</strong></div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:6px;margin-bottom:6px;">
+      <div class="stat-box" style="background:#fff5f5;">🔴 <strong>${stats.red}</strong><br><small>Red</small></div>
+      <div class="stat-box" style="background:#f5fff5;">🟢 <strong>${stats.green}</strong><br><small>Green</small></div>
+      <div class="stat-box" style="background:#f5f0ff;">🟣 <strong>${stats.violet}</strong><br><small>Violet</small></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;">
+      <div class="stat-box" style="background:#f5faff;">⬆️ <strong>${stats.big}</strong><br><small>Big</small></div>
+      <div class="stat-box" style="background:#fffaf5;">⬇️ <strong>${stats.small}</strong><br><small>Small</small></div>
+    </div>
+  `;
+  if (statsEl.dataset.hash !== newHTML) {
+    statsEl.dataset.hash = newHTML;
+    statsEl.innerHTML = newHTML;
+    statsEl.querySelectorAll('.stat-box').forEach(box => {
+      box.style.textAlign = 'center';
+      box.style.padding = '10px';
+      box.style.borderRadius = '8px';
+      box.style.boxShadow = '0 2px 6px rgba(0,0,0,0.05)';
+      box.style.transition = 'none';
+    });
+  }
+}
+
+// Render estimation (pattern-based reversal)
+// --- Smart Estimation with Violet Blending, Size Correlation, and Soft Streaks ---
+function renderEstimation(history) {
   if (!history || history.length === 0) {
     estimationEl.textContent = 'No data for estimation';
     return;
@@ -233,170 +372,259 @@ function renderEstimation(history, stats) {
   const latestIssue = history[0].issue || history[0].Issue || history[0].issueNumber || "—";
   let nextIssue = "—";
   if (!isNaN(Number(latestIssue))) {
-    nextIssue = Number(latestIssue) + 1;
-    if (String(latestIssue).length > 10) nextIssue = String(BigInt(latestIssue) + 1n);
+    try { nextIssue = String(BigInt(latestIssue) + 1n); } catch (e) { nextIssue = Number(latestIssue) + 1; }
   }
 
-  const { big, small, red, green, violet, total, nums } = stats;
+  const n = 10;
+  const stats = summarizeLastN(history, n);
+  const total = stats.total || 1;
 
-  // Base probabilities
-  const baseSize = { Big: 50, Small: 50 };
-  const baseColor = { red: 50, green: 50, violet: 20 }; // violet is only 2/10 chance
-  const baseNumChance = 10;
+  // --- Base chances ---
+  let sizeChance = { Big: 50, Small: 50 };
+  let colorChance = { red: 40, green: 40, violet: 20 };
 
-  // Adjust by bias from history
-  const dominanceSize = Math.abs(big - small) / total;
-  const dominanceColor = Math.abs(red - green) / (red + green + violet);
-  let sizeBias = baseSize.Big;
-  if (big > small) sizeBias -= dominanceSize * 30;
-  else sizeBias += dominanceSize * 30;
+  // --- Mean reversion (±10% adjustment) ---
+  const sizeDiff = (stats.big - stats.small) / total;
+  sizeChance.Big -= sizeDiff * 10;
+  sizeChance.Small += sizeDiff * 10;
 
-  let redBias = baseColor.red;
-  let greenBias = baseColor.green;
-  let violetBias = baseColor.violet;
-  if (red > green) { redBias -= dominanceColor * 20; greenBias += dominanceColor * 20; }
-  else { redBias += dominanceColor * 20; greenBias -= dominanceColor * 20; }
+  const colorDiffR = (stats.red / total) - 0.4;
+  const colorDiffG = (stats.green / total) - 0.4;
+  const colorDiffV = (stats.violet / total) - 0.2;
+  colorChance.red -= colorDiffR * 40;
+  colorChance.green -= colorDiffG * 40;
+  colorChance.violet -= colorDiffV * 40;
 
-  const colorTotal = redBias + greenBias + violetBias;
-  const nextColor = {
-    red: ((redBias / colorTotal) * 100).toFixed(1),
-    green: ((greenBias / colorTotal) * 100).toFixed(1),
-    violet: ((violetBias / colorTotal) * 100).toFixed(1)
+  // --- Detect streaks and patterns (soft influence) ---
+  const { patterns, explanation, predictedNext } = detectPatternAndPredict(history);
+  if (predictedNext.size) {
+    const sizeWeight = (predictedNext.size === 'Big') ? 1.1 : 0.9;
+    sizeChance.Big *= (predictedNext.size === 'Big') ? sizeWeight : (2 - sizeWeight);
+    sizeChance.Small *= (predictedNext.size === 'Small') ? sizeWeight : (2 - sizeWeight);
+  }
+  if (predictedNext.color) {
+    const colorWeight = 1.1;
+    if (predictedNext.color === 'red') colorChance.red *= colorWeight;
+    if (predictedNext.color === 'green') colorChance.green *= colorWeight;
+    if (predictedNext.color === 'violet') colorChance.violet *= colorWeight;
+  }
+
+  // --- Normalize helper ---
+  const normalize = (obj) => {
+    const sum = Object.values(obj).reduce((a, b) => a + b, 0);
+    for (const k in obj) obj[k] = Math.max(0, (obj[k] / sum) * 100);
   };
+  normalize(sizeChance);
+  normalize(colorChance);
 
-  const sizeTotal = sizeBias + (100 - sizeBias);
-  const nextSize = {
-    Big: ((sizeBias / sizeTotal) * 100).toFixed(1),
-    Small: (((100 - sizeBias) / sizeTotal) * 100).toFixed(1)
-  };
+  // --- Number probabilities (with violet blending and size correlation) ---
+  const numChance = Array(10).fill(10); // base 10% each
 
-  const maxCount = Math.max(...stats.nums);
-  const minCount = Math.min(...stats.nums);
-  const spread = maxCount - minCount || 1;
-  const rawProbs = stats.nums.map(c => (maxCount - c + 1));
-  const totalRaw = rawProbs.reduce((a,b)=>a+b,0);
-  const normalized = rawProbs.map(p => (p / totalRaw) * 100);
-  const top3 = normalized
-    .map((v,i)=>({num:i, chance:v}))
-    .sort((a,b)=>b.chance - a.chance)
-    .slice(0,3);
+  for (let i = 0; i < 10; i++) {
+    const size = getSize(i);
+    const color = getColor(i);
 
-  let trendComment = "";
-  if (big > small) trendComment += "Trend: Mostly Big recently — possible reversal to Small.";
-  else if (small > big) trendComment += "Trend: Mostly Small — possible reversal to Big.";
-  else trendComment += "Balanced size pattern — no clear bias.";
-  if (red > green) trendComment += " Reds dominated — Green or Violet could appear next.";
-  else if (green > red) trendComment += " Greens dominated — Red or Violet may appear.";
-  else trendComment += " Color distribution balanced.";
+    let sizeFactor = (size === 'Big') ? (sizeChance.Big / 50) : (sizeChance.Small / 50);
+    let colorFactor = 1.0;
 
-  estimationEl.innerHTML = `
+    if (color.includes('red')) colorFactor = (colorChance.red / 40);
+    else if (color.includes('green')) colorFactor = (colorChance.green / 40);
+    else if (color.includes('violet')) colorFactor = (colorChance.violet / 20);
+
+    // Violet hybrid blending (20%)
+    if (i === 0) { // red-violet
+      const redComponent = colorChance.red * 0.8;
+      const violetComponent = colorChance.violet * 0.2;
+      colorFactor = ((redComponent + violetComponent) / (40 * 1.0));
+    }
+    if (i === 5) { // green-violet
+      const greenComponent = colorChance.green * 0.8;
+      const violetComponent = colorChance.violet * 0.2;
+      colorFactor = ((greenComponent + violetComponent) / (40 * 1.0));
+    }
+
+    numChance[i] *= sizeFactor * colorFactor;
+  }
+
+  // --- Normalize to 100 ---
+  const totalNum = numChance.reduce((a, b) => a + b, 0);
+  const numPercent = numChance.map(x => (x / totalNum) * 100);
+
+  // --- Top 3 numbers ---
+  const top3 = numPercent
+    .map((pct, num) => ({ num, pct: pct.toFixed(1), color: getColor(num) }))
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 3);
+
+  // --- Render output ---
+  const patternsHtml = patterns.length
+    ? `<div><strong>Detected:</strong> ${patterns.join(', ')}</div><div style="font-style:italic;margin-top:6px;">${explanation}</div>`
+    : `<div style="font-style:italic;margin-top:6px;">${explanation}</div>`;
+
+  const html = `
     <div><strong>Next Issue:</strong> ${nextIssue}</div>
-    <div><strong>Predicted Size:</strong> ⬆️ Big: ${nextSize.Big}% | ⬇️ Small: ${nextSize.Small}%</div>
-    <div><strong>Predicted Color:</strong> 🔴 ${nextColor.red}% | 🟢 ${nextColor.green}% | 🟣 ${nextColor.violet}%</div>
-    <div><strong>Top 3 Likely Numbers:</strong></div>
-    <ul style="margin-left:1em;">
-      ${top3.map(t => `<li><span class="num">${t.num}</span> — ${t.chance.toFixed(1)}%</li>`).join('')}
-    </ul>
-    <div style="margin-top:6px;font-style:italic;">${trendComment}</div>
+    <div><strong>Predicted Size:</strong> ⬆️ Big: ${sizeChance.Big.toFixed(1)}% | ⬇️ Small: ${sizeChance.Small.toFixed(1)}%</div>
+    <div><strong>Predicted Color:</strong> 🔴 ${colorChance.red.toFixed(1)}% | 🟢 ${colorChance.green.toFixed(1)}% | 🟣 ${colorChance.violet.toFixed(1)}%</div>
+
+    <div style="margin-top:8px;"><strong>Top 3 Possible Numbers:</strong></div>
+    <div style="margin-left:8px;margin-top:6px;">
+      ${top3.map(t => {
+        const sym = (t.color.includes('red')) ? '🔴' : (t.color.includes('green')) ? '🟢' : '🟣';
+        return `<div><strong class="num ${t.color}">${t.num}</strong> ${sym} ${t.pct}%</div>`;
+      }).join('')}
+    </div>
+
+    <div style="margin-top:8px">${patternsHtml}</div>
     <div class="muted" style="margin-top:6px;">Based on last ${total} results</div>
   `;
+
+  if (estimationEl.dataset.hash !== html) {
+    estimationEl.dataset.hash = html;
+    estimationEl.innerHTML = html;
+  }
 }
 
+
+// Render history table (pagination persisted)
 function renderHistoryTable(dataArray) {
   const container = document.getElementById('historyTable');
   if (!container) return;
 
-  const rows = dataArray.slice(0,10).map(item => {
-    const issue = item.issue || item.Issue || item.issueNumber || '—';
-    const num = Number(item.number || item.result || item.Result || -1);
-    const color = getColor(num);
-    const size = getSize(num);
+  const max = Math.min(50, dataArray.length);
+  const slices = [];
+  for (let i = 0; i < max; i += 10) {
+    const chunk = dataArray.slice(i, i+10);
+    if (chunk.length) slices.push(chunk);
+  }
+  if (slices.length === 0) {
+    container.innerHTML = '<div class="history-wrapper"><div class="muted">No history yet.</div></div>';
+    return;
+  }
 
-    let colorDots = '';
-    if (color === 'red-violet') colorDots = `<span class="color-dot red"></span><span class="color-dot violet"></span>`;
-    else if (color === 'green-violet') colorDots = `<span class="color-dot green"></span><span class="color-dot violet"></span>`;
-    else colorDots = `<span class="color-dot ${color}"></span>`;
+  if (currentPage >= slices.length) currentPage = slices.length - 1;
+  if (currentPage < 0) currentPage = 0;
 
+  function buildPageHtml(pageIndex) {
+    const rows = slices[pageIndex].map(item => {
+      const issue = item.issue || item.Issue || item.issueNumber || '—';
+      const num = Number(item.number || item.result || item.Result || -1);
+      const color = getColor(num);
+      const size = getSize(num);
+      let colorDots = '';
+      if (color === 'red-violet') colorDots = `<span class="color-dot red"></span><span class="color-dot violet"></span>`;
+      else if (color === 'green-violet') colorDots = `<span class="color-dot green"></span><span class="color-dot violet"></span>`;
+      else colorDots = `<span class="color-dot ${color}"></span>`;
+      return `<tr><td>${issue}</td><td><span class="num ${color}">${num}</span></td><td class="center">${colorDots}</td><td class="center">${size}</td></tr>`;
+    }).join('');
     return `
-      <tr>
-        <td>${issue}</td>
-        <td><span class="num ${color}">${num}</span></td>
-        <td class="center">${colorDots}</td>
-        <td class="center">${size}</td>
-      </tr>`;
-  }).join('');
+      <div class="history-wrapper">
+        <table class="history-table">
+          <thead><tr><th>Issue</th><th>Number</th><th>Color</th><th>Size</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="pagination" style="margin-top:8px;text-align:center;">
+          <button data-role="prev" ${pageIndex===0?'disabled':''}>&lt; Prev</button>
+          <span>Page ${pageIndex+1} / ${slices.length}</span>
+          <button data-role="next" ${pageIndex===slices.length-1?'disabled':''}>Next &gt;</button>
+        </div>
+      </div>
+    `;
+  }
 
-  container.innerHTML = `
-    <div class="history-wrapper">
-      <table class="history-table">
-        <thead><tr><th>Issue</th><th>Number</th><th>Color</th><th>Size</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+  const pageHtml = buildPageHtml(currentPage);
+  if (container.dataset.pageHtml !== pageHtml) {
+    container.dataset.pageHtml = pageHtml;
+    container.innerHTML = pageHtml;
+    const prevBtn = container.querySelector('button[data-role="prev"]');
+    const nextBtn = container.querySelector('button[data-role="next"]');
+    if (prevBtn) prevBtn.addEventListener('click', () => { if (currentPage>0) { currentPage--; renderHistoryTable(dataArray); }});
+    if (nextBtn) nextBtn.addEventListener('click', () => { if (currentPage < slices.length-1) { currentPage++; renderHistoryTable(dataArray); }});
+  }
 }
 
-async function fetchAndRender(manual=false) {
+// Main fetch & render
+async function fetchAndRender(manual = false) {
   try {
     const json = await fetchHistory();
+
+    // normalize array
     let dataArray = [];
     if (Array.isArray(json.data)) dataArray = json.data;
     else if (json.data && Array.isArray(json.data.list)) dataArray = json.data.list;
     else if (Array.isArray(json.Result)) dataArray = json.Result;
     else if (Array.isArray(json)) dataArray = json;
-    if (!Array.isArray(dataArray) || dataArray.length === 0)
-      throw new Error('No data found in response.');
 
-    rawEl.textContent = JSON.stringify(dataArray.slice(0,8), null, 2);
-    const historySlice = dataArray.slice(0, 10);
-    renderLatest(dataArray);
+    if (!Array.isArray(dataArray) || dataArray.length === 0) throw new Error('No data found in response.');
 
-    const stats = summarize(historySlice);
-    statsEl.innerHTML = `
-      <div>Total: ${stats.total}</div>
-      <div>Big: ${stats.big} | Small: ${stats.small}</div>
-      <div>Red: ${stats.red} | Green: ${stats.green} | Violet: ${stats.violet}</div>`;
+    // Merge new items
+    const newItems = [];
+    for (const item of dataArray) {
+      const issue = item.issue || item.Issue || item.issueNumber;
+      if (!fullHistory.some(x => (x.issue || x.Issue || x.issueNumber) === issue)) {
+        newItems.push(item);
+      }
+    }
+    if (newItems.length > 0) {
+      fullHistory = [...newItems, ...fullHistory].slice(0, 50);
+    } else if (fullHistory.length === 0) {
+      fullHistory = dataArray.slice(0, 50);
+    }
 
-    renderEstimation(historySlice, stats);
-    renderHistoryTable(historySlice);
-  } catch(err) {
+    if (fullHistory.length) lastKnownIssue = fullHistory[0].issue || fullHistory[0].Issue || fullHistory[0].issueNumber;
+
+    // Render
+    renderLatest(fullHistory);
+    const stats10 = summarizeLastN(fullHistory, 10);
+    renderStats(stats10);
+    renderEstimation(fullHistory);
+    renderHistoryTable(fullHistory);
+
+    // raw preview
+    const rawPreview = JSON.stringify(fullHistory.slice(0,8), null, 2);
+    if (rawEl.textContent !== rawPreview) rawEl.textContent = rawPreview;
+
+    // clear error if any
+    if (errorBox.innerHTML) errorBox.innerHTML = '';
+
+  } catch (err) {
     console.error(err);
     const isCORS = /Failed to fetch|CORS/i.test(err.message);
-    errorBox.innerHTML = `<div class="error">${err.message}</div>` +
-      (isCORS ? `<div class="muted">CORS issue — use a proxy.</div>` : '');
-    latestEl.textContent = statsEl.textContent = rawEl.textContent = estimationEl.textContent = 'Error';
+    errorBox.innerHTML = `<div class="error">${err.message}</div>` + (isCORS ? `<div class="muted">CORS issue — use a proxy.</div>` : '');
   } finally {
     if (manual) console.log("Manual refresh done.");
   }
 }
 
+// Live clock
 async function startLiveClock() {
   let baseOffset = 0;
   try {
     const res = await fetch("https://worldtimeapi.org/api/timezone/Asia/Kolkata");
     const data = await res.json();
     baseOffset = new Date(data.datetime) - Date.now();
-  } catch {
+  } catch (e) {
     baseOffset = 0;
   }
-
   setInterval(() => {
     const now = new Date(Date.now() + baseOffset);
-    const timeStr = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
-    lastUpdated.textContent = "Clock: " + timeStr + " (IST)";
-    const sec = now.getSeconds();
-    if (sec === 0 || sec === 30) {
-      if (!window._justFetched) {
-        fetchAndRender();
-        window._justFetched = true;
-        setTimeout(()=>window._justFetched=false, 1000);
-      }
-    }
+    lastUpdated.textContent = "Clock: " + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}) + " (IST)";
   }, 1000);
 }
 
-fetchAndRender();
+// Auto fetch (2s)
+async function startAutoFetch() {
+  await fetchAndRender();
+  if (autoCheckInterval) clearInterval(autoCheckInterval);
+  autoCheckInterval = setInterval(fetchAndRender, 2000);
+}
+
+// Keep refresh button behavior simple (no animation)
+btnRefresh.addEventListener('click', async () => {
+  await fetchAndRender(true);
+});
+
+startAutoFetch();
 startLiveClock();
 </script>
 </body>
 </html>
-
