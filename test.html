@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chicken Road 2.0 Demo (Auto-Fit Mobile View)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .controls {
+      margin-bottom: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    select, button {
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    select:hover, button:hover {
+      background: #333;
+    }
+
+    .mobile-frame {
+      position: relative;
+      border: 12px solid #333;
+      border-radius: 25px;
+      overflow: hidden; /* hides scroll completely */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      overflow: hidden;
+      transform-origin: top left;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <label for="size">📱 Screen Size:</label>
+    <select id="size">
+      <option value="360x640">360×640 (Android Small)</option>
+      <option value="375x667">375×667 (iPhone SE)</option>
+      <option value="360x800" selected>360×800 (Normal Small Phone)</option>
+      <option value="450x800">450×800 (Normal Phone)</option>
+      <option value="390x844">390×844 (iPhone 14 Pro)</option>
+      <option value="412x915">412×915 (Pixel 8 Pro)</option>
+      <option value="720x1280">720×1280 (Common India Budget)</option>
+      <option value="1080x1920">1080×1920 (Full HD Mobile)</option>
+    </select>
+
+    <button id="mode">HD Mode: OFF</button>
+  </div>
+
+  <div class="mobile-frame" id="frame">
+    <div class="iframe-container">
+      <iframe
+        id="gameFrame"
+        src="https://demo.inout.games/games-view/games/game/?authToken=9fc2bc8e-40a1-fee4-9900-2102cb30a7af&operatorId=ee2013ed-e1f0-4d6e-97d2-f36619e2eb52&gameMode=chicken-road-two&isDemo=MTc0NDgwNDk0NzQ0Nw%3D%3D&currency=USD&lang=en"
+        loading="lazy"
+        allowfullscreen
+        scrolling="no"
+      ></iframe>
+    </div>
+  </div>
+
+  <script>
+    const sizeSelector = document.getElementById('size');
+    const modeButton = document.getElementById('mode');
+    const frame = document.getElementById('frame');
+    const iframe = document.getElementById('gameFrame');
+    const savedSize = localStorage.getItem('mobileSize');
+    const savedMode = localStorage.getItem('hdMode') === 'true';
+    if (savedSize) sizeSelector.value = savedSize;
+    let isHD = savedMode;
+    updateModeButton();
+    function updateFrameSize() {
+      const [w, h] = sizeSelector.value.split('x').map(Number);
+      const scale = isHD ? 1 : 0.67;
+      frame.style.width = `${w}px`;
+      frame.style.height = `${h}px`;
+      const iframeAspect = 800 / 360; // base ratio
+      const chosenAspect = h / w;
+      if (chosenAspect !== iframeAspect) {
+        // if aspect ratio mismatch, scale iframe to fit height
+        const scaleFactor = Math.min(w / 360, h / 800);
+        iframe.style.transform = `scale(${scaleFactor})`;
+      } else {
+        iframe.style.transform = `scale(1)`;
+      }
+
+      frame.style.transform = `scale(${scale})`;
+      frame.style.transformOrigin = 'center center';
+
+      localStorage.setItem('mobileSize', sizeSelector.value);
+    }
+
+    function toggleMode() {
+      isHD = !isHD;
+      updateModeButton();
+      updateFrameSize();
+      localStorage.setItem('hdMode', isHD);
+    }
+
+    function updateModeButton() {
+      modeButton.textContent = `HD Mode: ${isHD ? 'ON' : 'OFF'}`;
+      modeButton.style.background = isHD ? '#0a0' : '#222';
+    }
+
+    sizeSelector.addEventListener('change', updateFrameSize);
+    modeButton.addEventListener('click', toggleMode);
+    updateFrameSize();
+  </script>
+</body>
+</html>
